@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://aonitek.github.io/cabuleros-mundial-2026/sitemap.xml
