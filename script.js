@@ -1292,7 +1292,7 @@ function currentCabalaText(){
 function refreshFig(){
   $('#fig-text').textContent = '"' + currentCabalaText() + '"';
   const msg = '🧿 Mi cábala para el Mundial 2026: "' + currentCabalaText()
-    + '". La sellé en mi figurita de "Cabuleros", el juego de Aonitek. Conseguí la tuya: ' + GAME_URL;
+    + '". La sellé en mi figurita de "Cabuleros", el juego de Aonitek. Conseguí la tuya: ' + utmUrl(PROMO_URL, 'figurita');
   $('#btn-wsp').href = 'https://wa.me/?text=' + encodeURIComponent(msg);
 }
 $('#cabala-input').addEventListener('input', refreshFig);
