@@ -219,6 +219,48 @@ button{font-family:inherit;border:none;cursor:pointer;color:inherit;background:n
 @keyframes ledScroll{from{transform:translateX(0)}to{transform:translateX(-50%)}}
 .copa{width:84px;height:84px;margin-bottom:6px;filter:drop-shadow(0 6px 24px rgba(255,200,69,.45))}
 
+/* ---------- MURO DE LA FAMA OPT-IN ---------- */
+.muro-block{
+  margin-top:18px;width:min(320px,86vw);
+  background:rgba(9,182,209,.07);
+  border:1px solid rgba(9,182,209,.25);
+  border-radius:var(--radius);
+  padding:14px 16px;text-align:left;
+}
+.muro-block-title{
+  font-size:11px;font-weight:800;letter-spacing:2px;text-transform:uppercase;
+  color:var(--aonitek);margin-bottom:10px;text-align:center;
+}
+.muro-row{display:flex;gap:8px;align-items:center}
+.muro-input{
+  flex:1;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.16);
+  border-radius:8px;padding:10px 12px;color:var(--ink);font-family:inherit;
+  font-size:14px;font-weight:700;outline:none;min-width:0;
+}
+.muro-input::placeholder{color:var(--ink-dim);font-weight:400}
+.muro-input:focus{border-color:var(--aonitek)}
+.btn-muro{
+  background:var(--aonitek);color:#000;font-family:inherit;
+  font-weight:900;font-size:12px;letter-spacing:.5px;
+  padding:10px 14px;border-radius:8px;cursor:pointer;
+  white-space:nowrap;transition:.15s;flex:none;border:none;
+}
+.btn-muro:active{transform:scale(.95)}
+.btn-muro:disabled{opacity:.45;pointer-events:none}
+.muro-link{
+  display:block;text-align:center;margin-top:10px;
+  font-size:12px;color:var(--ink-dim);text-decoration:none;
+}
+.muro-link span{color:var(--aonitek);font-weight:700}
+.muro-ok{
+  text-align:center;font-size:13px;font-weight:700;
+  color:var(--ok);padding:4px 0 2px;
+}
+.muro-err{
+  text-align:center;font-size:12px;color:var(--danger);
+  margin-top:6px;
+}
+
 /* figurita */
 .figurita{
   width:min(248px,72vw);border-radius:16px;padding:4px;
