@@ -4,13 +4,25 @@
 <base href="/cabuleros-mundial-2026/">
 <!-- BASE:END -->
 
+
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
 <link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@75..125,400..900&amp;display=swap" rel="stylesheet">
+
+<!-- SEO Meta Tags -->
+
+
+
+
+
+
+
+
+<!-- End SEO Meta Tags -->
+
 
 
 <!-- SEO Meta Tags -->
@@ -362,8 +374,28 @@
     </div>
     <div class="stack" style="margin-top:16px">
       <a class="btn btn-wsp" id="btn-brag" target="_blank" rel="noopener" style="min-width:0;width:min(320px,86vw)">Presumir por WhatsApp</a>
+      <button class="btn btn-ghost" id="btn-champ-carnet" style="min-width:0;width:min(320px,86vw)">Mi carnet de campeón 🪪</button>
       <button class="btn btn-ghost" id="btn-champ-menu" style="min-width:0;width:min(320px,86vw)">Volver al menú</button>
     </div>
+  </div>
+
+  <!-- ===== CARNET DE CABULERO ===== -->
+  <div class="ovl" id="ovl-carnet">
+    <div class="eyebrow">Credencial oficial · Mundial 2026</div>
+    <div style="font-weight:900;font-size:24px;font-stretch:88%">Tu carnet de Cabulero</div>
+    <input id="carnet-apodo" maxlength="16" placeholder="Tu apodo (ej: El Tano)" autocomplete="off">
+    <canvas id="carnet-cv" width="1080" height="1520"></canvas>
+    <div class="stack" style="margin-top:14px">
+      <button class="btn btn-gold" id="btn-carnet-share">Compartir carnet 🪪</button>
+      <button class="btn btn-ghost" id="btn-carnet-save">Guardar imagen</button>
+      <button class="btn btn-ghost" id="btn-carnet-back">Volver</button>
+    </div>
+  </div>
+
+  <div id="carnet-saver">
+    <p>Mantené apretada la imagen para guardarla 👇</p>
+    <img id="carnet-img" alt="Carnet de Cabulero">
+    <button class="btn btn-ghost" id="btn-saver-close">Listo</button>
   </div>
 
   <!-- ===== PAUSE ===== -->
@@ -400,8 +432,6 @@
   <svg width="56" height="56" viewBox="0 0 24 24" fill="none"><rect x="6" y="3" width="12" height="18" rx="2.5" stroke="#FFC845" stroke-width="1.8"></rect><path d="M3 12c0-3 1.5-5.5 4-7M21 12c0 3-1.5 5.5-4 7" stroke="#9FB0C6" stroke-width="1.6" stroke-linecap="round"></path></svg>
   <p>Girá el teléfono: este partido se juega en vertical.</p>
 </div>
-
-
 
   <script src="script.js"></script>
 </body></html>
