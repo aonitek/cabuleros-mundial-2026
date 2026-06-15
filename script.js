@@ -7,6 +7,9 @@
 /* ================= CONFIG GENERAL ================= */
 const AONITEK_URL = 'https://aonitek.com';           // CTA diagnóstico (editable)
 const GAME_URL = "https://app.aonitek.com/p/zaZu5x"; // URL real de la página publicada
+const PROMO_URL = "https://app.aonitek.com/p/UD87r5j5"; // página de promo del juego (para shares del carnet/campeón)
+const AONITEK_SERVICES = 'https://aonitek.com/servicios/';
+const utmUrl = (base, content) => base + '?utm_source=cabuleros&utm_medium=game&utm_campaign=mundial2026&utm_content=' + content;
 
 const COLS = 5, ROWS = 8;
 const GOAL_Y = ROWS - 0.18;        // línea de gol (abajo)
@@ -218,6 +221,7 @@ function buildSchedule(level){
 function startLevel(idx){
   const lv = LEVELS[idx];
   S.levelIdx = idx;
+  resetLevelBucket(lv.n);
   S.matchT = 0;
   S.aliento = START_ALIENTO + S.socioBonus;
   S.socioBonus = 0;
@@ -247,6 +251,7 @@ function endLevel(won){
   if (S.ended) return;
   S.ended = true; S.running = false;
   S.selCard = null;
+  recLevelEnd(won);
   setTimeout(()=>{
     $('#hud').classList.remove('on');
     $('#tray').classList.remove('on');
@@ -266,7 +271,6 @@ function quitToMenu(){
   $('#chat-fab').classList.add('on');
   setScreen('menu');
 }
-
 /* ================= UPDATE ================= */
 function update(dt){
   const lv = LEVELS[S.levelIdx];
@@ -411,7 +415,7 @@ function spawnEnemy(type, lane){
   const def = ENEMIES[type];
   S.enemies.push({
     type, lane,
-    y:-0.8, hp:def.hp, maxHp:def.hp,
+    y:-0.8, hp:def.hp, maxHp:def.hp, score:def.score||1,
     spd:def.spd*(0.93+rnd(0.14)), w:def.w,
     color:def.color, boss:!!def.boss,
     stun:0, hurt:0, wob:rnd(Math.PI*2),
@@ -420,6 +424,7 @@ function spawnEnemy(type, lane){
 
 function killEnemy(i){
   const e = S.enemies[i];
+  recKill(e);
   spawnDeathParts(laneX(e.lane), yOf(e.y), e.color);
   S.enemies.splice(i,1);
 }
@@ -805,9 +810,8 @@ function drawGhostHints(){
   }
   ctx.setLineDash([]);
 }
-
 /* ================= UI: PANTALLAS ================= */
-const SCREENS = ['menu','fig','dt','gesture','result','champ','pause'];
+const SCREENS = ['menu','fig','dt','gesture','result','champ','pause','carnet'];
 function setScreen(name){
   S.screen = name;
   for (const s of SCREENS){
@@ -987,6 +991,7 @@ function placeUnit(id, r, c){
     gen:def.gen || null, shoot:def.shoot || null, module:def.module || null,
     kick:0,
   };
+  recPlace(id);
   if (id === 'aonitek') showBanner('CARRIL AUTOMATIZADO', 'tech');
   S.selCard = null;
   refreshCardSel();
@@ -1038,6 +1043,7 @@ function endCabala(success){
   setScreen('play');
   gctx.clearRect(0,0,gcv.width,gcv.height);
   if (success){
+    recCabala(true);
     S.cabalaCd[key] = S.matchT;
     S.flashT = S.reducedMotion ? 0 : 0.5;
     SFX.cabala();
@@ -1050,6 +1056,7 @@ function endCabala(success){
       showHint('Frenesí: disparo y Aliento al doble por 10 segundos', 3200);
     }
   } else {
+    recCabala(false);
     // fallo amable: deja solo 8s de cooldown
     S.cabalaCd[key] = S.matchT - (CABALA_CFG[key].cd - 8);
     showBanner('SE CORTÓ LA CÁBALA…', 'bad');
@@ -1136,6 +1143,7 @@ $('#cb-amuleto').addEventListener('click', () => startCabala('amuleto'));
 $('#menu-led-txt').textContent = (LED_MSGS.join('  ·  ') + '  ·  ').repeat(2);
 
 $('#btn-play').addEventListener('click', () => {
+  resetRunStats();
   audioInit(); SFX.click();
   openDT(0);
 });
@@ -1181,15 +1189,25 @@ function showResult(won){
     b.addEventListener('click', () => { SFX.click(); fn(); });
     acts.appendChild(b);
   };
-  if (won) mk('Siguiente partido', 'btn-gold', () => openDT(S.levelIdx+1));
-  else mk('Revancha', 'btn-gold', () => openDT(S.levelIdx));
+  if (won){
+    mk('Siguiente partido', 'btn-gold', () => openDT(S.levelIdx+1));
+  } else {
+    mk('Revancha', 'btn-gold', () => openDT(S.levelIdx));
+    mk('Mi carnet de Cabulero 🪪', 'btn-ghost', () => openCarnet('result'));
+    const oc = outcomeInfo();
+    const a = document.createElement('a');
+    a.className = 'btn btn-aon'; a.textContent = oc.ctaText;
+    a.href = oc.ctaUrl; a.target = '_blank'; a.rel = 'noopener';
+    acts.appendChild(a);
+  }
   mk('Salir al menú', 'btn-ghost', quitToMenu);
   setScreen('result');
 }
 
 function showChampion(){
-  $('#btn-cta').href = AONITEK_URL + '?utm_source=cabuleros&utm_medium=game&utm_campaign=mundial2026';
-  const brag = '🏆 Salí CAMPEÓN DEL MUNDO en "Cabuleros", el juego mundialista de Aonitek. A ver si podés aguantar la final sin tocar nada: ' + GAME_URL;
+  $('#btn-cta').href = utmUrl(AONITEK_SERVICES, 'campeon');
+  const brag = '🏆 Salí CAMPEÓN DEL MUNDO en "Cabuleros" con ' + fmtPts(statsTotals().pts)
+    + ' puntos. ¿Me superás? A ver si aguantás la final sin tocar nada: ' + utmUrl(PROMO_URL, 'campeon_brag');
   $('#btn-brag').href = 'https://wa.me/?text=' + encodeURIComponent(brag);
   setScreen('champ');
 }
@@ -1273,15 +1291,367 @@ $('#btn-fig').addEventListener('click', () => {
 });
 $('#btn-fig-back').addEventListener('click', () => { SFX.click(); setScreen('menu'); });
 
-$('#btn-wsp').addEventListener('click', () => {
-  // se abre el wa.me en el href; acá solo acreditamos el bono
-  if (!S.shareBonus){
-    S.shareBonus = true;
-    $('#bono-note').textContent = '¡Bono activado! +20% de Aliento en todos tus partidos 🧿';
-    SFX.cabala();
+function grantShareBonus(){
+  if (S.shareBonus) return;
+  S.shareBonus = true;
+  $('#bono-note').textContent = '¡Bono activado! +20% de Aliento en todos tus partidos 🧿';
+  SFX.cabala();
+}
+$('#btn-wsp').addEventListener('click', grantShareBonus);
+
+/* ================= STATS DE PARTIDA + CARNET DE CABULERO ================= */
+function resetRunStats(){
+  S.stats = { byLevel:{}, levelReached:1, champion:false };
+}
+function ensureStats(){
+  if (!S.stats) resetRunStats();
+  return S.stats;
+}
+function resetLevelBucket(n){
+  ensureStats().byLevel[n] = { pts:0, kills:0, placed:{}, cabOk:0, cabFail:0, bonus:0 };
+  if (n > S.stats.levelReached) S.stats.levelReached = n;
+}
+function curBucket(){
+  const n = LEVELS[S.levelIdx].n;
+  const st = ensureStats();
+  if (!st.byLevel[n]) resetLevelBucket(n);
+  return st.byLevel[n];
+}
+function recKill(e){
+  const b = curBucket();
+  b.kills++;
+  b.pts += (e.score || 1) * 100;
+}
+function recPlace(id){
+  const b = curBucket();
+  b.placed[id] = (b.placed[id] || 0) + 1;
+}
+function recCabala(ok){
+  const b = curBucket();
+  if (ok){ b.cabOk++; b.pts += 150; } else { b.cabFail++; }
+}
+function recLevelEnd(won){
+  const lv = LEVELS[S.levelIdx];
+  const b = curBucket();
+  if (won){
+    b.bonus += (MAX_GOLES - S.goles) * 200 + lv.n * 500;
+    if (S.levelIdx === LEVELS.length - 1) ensureStats().champion = true;
+  }
+}
+function statsTotals(){
+  const st = ensureStats();
+  const t = { pts:0, kills:0, cabOk:0, cabFail:0, placed:{} };
+  for (const n in st.byLevel){
+    const b = st.byLevel[n];
+    t.pts += b.pts + b.bonus;
+    t.kills += b.kills;
+    t.cabOk += b.cabOk;
+    t.cabFail += b.cabFail;
+    for (const id in b.placed) t.placed[id] = (t.placed[id] || 0) + b.placed[id];
+  }
+  return t;
+}
+const fmtPts = n => Math.round(n).toLocaleString('es-AR');
+
+function computeEstilo(t){
+  const p = t.placed;
+  const h = p.hinchada || 0, atk = (p.delantero || 0) + (p.enganche || 0);
+  const mur = p.defensor || 0, aon = p.aonitek || 0;
+  const total = h + atk + mur + aon;
+  if (total === 0) return ['DEBUTANTE', 'Entró a la cancha y la rompió igual'];
+  if (aon >= 3) return ['EL AUTOMATIZADOR', 'Planta IA y deja que el equipo gane solo'];
+  if (t.cabOk >= 4) return ['CABULERO SERIAL', 'No deja ritual sin hacer. Y le funciona.'];
+  if (mur >= atk && mur >= h) return ['CATENACCIO PURO', 'Primero el cero, después la gloria'];
+  if (atk >= h) return ['OFENSIVA TOTAL', 'La mejor defensa es un pelotazo'];
+  return ['ESTRATEGA DEL ALIENTO', 'Hace cantar a la tribuna y gana después'];
+}
+
+function outcomeInfo(){
+  const st = ensureStats();
+  if (st.champion) return {
+    key:'campeon', label:'CAMPEÓN DEL MUNDO', color:'#FFC845',
+    ctaUrl: utmUrl(AONITEK_SERVICES, 'campeon'),
+    ctaText:'Quiero mi diagnóstico de IA gratis',
+  };
+  if (st.levelReached >= 3) return {
+    key:'finalista', label:'FINALISTA', color:'#FFC845',
+    ctaUrl: utmUrl(AONITEK_SERVICES, 'finalista'),
+    ctaText:'Quiero mi diagnóstico de IA gratis',
+  };
+  if (st.levelReached === 2) return {
+    key:'semifinal', label:'SEMIFINALISTA', color:'#EAF4FB',
+    ctaUrl: utmUrl(AONITEK_SERVICES, 'semifinal'),
+    ctaText:'Tus rivales ya usan IA. Conocé Aonitek',
+  };
+  return {
+    key:'grupos', label:'FASE DE GRUPOS', color:'#EAF4FB',
+    ctaUrl: utmUrl(AONITEK_URL + '/', 'grupos'),
+    ctaText:'Aonitek te da revancha: IA real, sin cábalas',
+  };
+}
+
+/* ---------- Carnet: render ---------- */
+const carnetCv = $('#carnet-cv');
+let carnetApodo = '';
+function carnetData(){
+  const t = statsTotals();
+  const est = computeEstilo(t);
+  const cab = ($('#cabala-input').value || '').trim();
+  return {
+    apodo: (carnetApodo || 'EL CABULERO').toUpperCase(),
+    outcome: outcomeInfo(),
+    pts: t.pts, kills: t.kills, cabOk: t.cabOk,
+    estilo: est[0], estiloSub: est[1],
+    cabala: cab,
+  };
+}
+function drawCarnet(){
+  if (!carnetCv) return;
+  const d = carnetData();
+  const cc = carnetCv.getContext('2d');
+  const W2 = carnetCv.width, H2 = carnetCv.height;
+  setCtx(cc);
+  try {
+    /* fondo */
+    ctx.clearRect(0,0,W2,H2);
+    ctx.fillStyle = '#0A1626';
+    ctx.fillRect(0,0,W2,H2);
+    /* franjas celestes de fondo, sutiles */
+    ctx.save();
+    ctx.globalAlpha = 0.05;
+    ctx.fillStyle = '#7CC4EF';
+    for (let x = -100; x < W2 + 100; x += 220) {
+      ctx.save(); ctx.translate(x, 0); ctx.rotate(-0.12);
+      ctx.fillRect(0, -200, 90, H2 + 400); ctx.restore();
+    }
+    ctx.restore();
+    /* marco credencial */
+    ctx.strokeStyle = '#FFC845'; ctx.lineWidth = 10;
+    roundRect(24, 24, W2-48, H2-48, 42); ctx.stroke();
+    /* banda superior dorada */
+    ctx.save();
+    roundRect(24, 24, W2-48, H2-48, 42); ctx.clip();
+    const grad = ctx.createLinearGradient(0, 24, 0, 188);
+    grad.addColorStop(0, '#FFC845'); grad.addColorStop(1, '#E0A21E');
+    ctx.fillStyle = grad;
+    ctx.fillRect(24, 24, W2-48, 164);
+    ctx.restore();
+    /* título: dos líneas para evitar la superposición con "MUNDIAL 2026" */
+    ctx.fillStyle = '#231903';
+    ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
+    ctx.font = '900 50px Archivo, sans-serif';
+    ctx.fillText('CARNET DE CABULERO', 72, 100);
+    ctx.font = '800 32px Archivo, sans-serif';
+    ctx.globalAlpha = 0.7;
+    ctx.fillText('MUNDIAL 2026', 72, 150);
+    ctx.globalAlpha = 1;
+    /* chip avatar */
+    const chipX = 230, chipY = 420, chipS = 290;
+    drawChipBase(chipX, chipY, chipS, '#103258', '#F2F5FA');
+    ctx.save(); ctx.translate(chipX, chipY);
+    const s = chipS;
+    ctx.fillStyle = '#EAF4FB';
+    roundRect(-s*0.36,-s*0.36,s*0.72,s*0.72,s*0.12); ctx.fill();
+    ctx.save();
+    roundRect(-s*0.36,-s*0.36,s*0.72,s*0.72,s*0.12); ctx.clip();
+    ctx.fillStyle = '#7CC4EF';
+    for (let i=-3;i<=3;i+=2) ctx.fillRect(i*s*0.12 - s*0.06, -s*0.36, s*0.12, s*0.72);
+    ctx.restore();
+    ctx.fillStyle = '#FFC845';
+    ctx.beginPath(); ctx.arc(0, 0, s*0.16, 0, 7); ctx.fill();
+    ctx.fillStyle = '#103258';
+    ctx.beginPath(); ctx.arc(0, 0, s*0.09, 0, 7); ctx.fill();
+    ctx.fillStyle = '#FFF';
+    ctx.beginPath(); ctx.arc(0, 0, s*0.04, 0, 7); ctx.fill();
+    ctx.restore();
+    /* apodo + estilo */
+    const txX = 430;
+    ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
+    ctx.fillStyle = '#9FB0C6';
+    ctx.font = '800 28px Archivo, sans-serif';
+    ctx.fillText('JUGADOR/A', txX, 330);
+    ctx.fillStyle = '#FFC845';
+    let apFont = 76;
+    ctx.font = '900 ' + apFont + 'px Archivo, sans-serif';
+    while (ctx.measureText(d.apodo).width > W2 - txX - 80 && apFont > 40){
+      apFont -= 4; ctx.font = '900 ' + apFont + 'px Archivo, sans-serif';
+    }
+    ctx.fillText(d.apodo, txX, 415);
+    ctx.fillStyle = '#EAF4FB';
+    ctx.font = '900 40px Archivo, sans-serif';
+    ctx.fillText(d.estilo, txX, 490);
+    ctx.fillStyle = '#9FB0C6';
+    ctx.font = '600 30px Archivo, sans-serif';
+    ctx.fillText(d.estiloSub, txX, 538);
+    /* resultado */
+    ctx.textAlign = 'center';
+    ctx.fillStyle = '#9FB0C6';
+    ctx.font = '800 28px Archivo, sans-serif';
+    ctx.fillText('— RESULTADO DE LA COPA —', W2/2, 660);
+    ctx.fillStyle = d.outcome.color;
+    let ocFont = 84;
+    ctx.font = '900 ' + ocFont + 'px Archivo, sans-serif';
+    while (ctx.measureText(d.outcome.label).width > W2 - 140 && ocFont > 48){
+      ocFont -= 4; ctx.font = '900 ' + ocFont + 'px Archivo, sans-serif';
+    }
+    ctx.fillText(d.outcome.label, W2/2, 760);
+    /* stats: 3 cajas */
+    const boxes = [
+      [fmtPts(d.pts), 'PUNTOS'],
+      [String(d.kills), 'RIVALES FRENADOS'],
+      [String(d.cabOk), 'CÁBALAS USADAS'],
+    ];
+    const bw = 296, bh = 170, gap = 26;
+    const x0 = (W2 - (bw*3 + gap*2)) / 2;
+    boxes.forEach((bx, i) => {
+      const x = x0 + i*(bw+gap), y = 830;
+      ctx.fillStyle = 'rgba(255,255,255,0.06)';
+      roundRect(x, y, bw, bh, 26); ctx.fill();
+      ctx.strokeStyle = 'rgba(255,255,255,0.14)'; ctx.lineWidth = 2.5;
+      roundRect(x, y, bw, bh, 26); ctx.stroke();
+      ctx.fillStyle = '#FFFFFF';
+      ctx.font = '900 58px Archivo, sans-serif';
+      ctx.fillText(bx[0], x + bw/2, y + 86);
+      ctx.fillStyle = '#9FB0C6';
+      ctx.font = '800 22px Archivo, sans-serif';
+      ctx.fillText(bx[1], x + bw/2, y + 134);
+    });
+    /* cábala sellada */
+    if (d.cabala){
+      ctx.fillStyle = '#FFC845';
+      ctx.font = 'italic 600 34px Archivo, sans-serif';
+      let cab = '\u201C' + d.cabala + '\u201D';
+      while (ctx.measureText(cab).width > W2 - 160 && cab.length > 8){
+        cab = cab.slice(0, -2) + '\u2026\u201D';
+      }
+      ctx.fillText(cab, W2/2, 1085);
+      ctx.fillStyle = '#9FB0C6';
+      ctx.font = '700 24px Archivo, sans-serif';
+      ctx.fillText('CÁBALA SELLADA', W2/2, 1128);
+    }
+    /* footer: línea divisoria */
+    ctx.fillStyle = 'rgba(255,255,255,0.10)';
+    ctx.fillRect(24, 1170, W2-48, 2);
+
+    /* desafío: ¿ME SUPERÁS? + puntaje, para que el reto quede en la propia imagen */
+    ctx.textAlign = 'center'; ctx.textBaseline = 'alphabetic';
+    ctx.fillStyle = '#FFC845';
+    let chalFont = 54;
+    const chalTxt = '¿ME SUPERÁS? · ' + fmtPts(d.pts) + ' PTS';
+    ctx.font = '900 ' + chalFont + 'px Archivo, sans-serif';
+    while (ctx.measureText(chalTxt).width > W2 - 100 && chalFont > 32){
+      chalFont -= 4; ctx.font = '900 ' + chalFont + 'px Archivo, sans-serif';
+    }
+    ctx.fillText(chalTxt, W2/2, 1248);
+
+    /* mensaje de negocio, personalizado según el resultado */
+    const footerMsg = d.outcome.key === 'campeon'
+      ? '¿Tu negocio también puede salir campeón? → IA real, sin humo'
+      : 'A tu negocio no le pasaría esto con Aonitek 🧿';
+    ctx.fillStyle = '#9FB0C6';
+    ctx.font = '700 32px Archivo, sans-serif';
+    const msgWords = footerMsg.split(' ');
+    const msgLines = [];
+    let msgCur = '';
+    for (const w of msgWords){
+      const test = msgCur ? msgCur + ' ' + w : w;
+      if (ctx.measureText(test).width > W2 - 160 && msgCur){
+        msgLines.push(msgCur); msgCur = w;
+      } else { msgCur = test; }
+    }
+    if (msgCur) msgLines.push(msgCur);
+    let msgY = 1310;
+    for (const line of msgLines){
+      ctx.fillText(line, W2/2, msgY);
+      msgY += 42;
+    }
+
+    /* botón / pill de marca */
+    const pillTxt = 'Hecho por Aonitek.com';
+    ctx.font = '900 38px Archivo, sans-serif';
+    const pillPad = 48;
+    const pillW = Math.min(W2 - 96, ctx.measureText(pillTxt).width + pillPad*2);
+    const pillH = 76;
+    const pillX = (W2 - pillW)/2;
+    const pillY = msgY + 24;
+    ctx.fillStyle = '#8A6CFF';
+    roundRect(pillX, pillY, pillW, pillH, pillH/2); ctx.fill();
+    ctx.fillStyle = '#FFFFFF';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(pillTxt, W2/2, pillY + pillH/2 + 2);
+    ctx.textBaseline = 'alphabetic';
+  } finally {
+    setCtx(null);
+  }
+}
+
+/* ---------- Carnet: navegación ---------- */
+let carnetBack = 'menu';
+let carnetRAF = 0;
+function openCarnet(from){
+  audioInit(); SFX.click();
+  carnetBack = from || 'menu';
+  drawCarnet();
+  setScreen('carnet');
+}
+$('#carnet-apodo').addEventListener('input', ev => {
+  carnetApodo = ev.target.value.trim().replace(/\s+/g, ' ').slice(0, 16);
+  cancelAnimationFrame(carnetRAF);
+  carnetRAF = requestAnimationFrame(drawCarnet);
+});
+$('#btn-carnet-back').addEventListener('click', () => { SFX.click(); setScreen(carnetBack); });
+$('#btn-champ-carnet').addEventListener('click', () => openCarnet('champ'));
+
+/* ---------- Carnet: compartir / guardar ---------- */
+function buildCarnetText(){
+  const d = carnetData();
+  return '🪪⚽ Mi carnet de Cabulero: ' + d.apodo + ' · ' + d.outcome.label
+    + ' · ' + fmtPts(d.pts) + ' puntos. ¿Me superás? Jugá: ' + utmUrl(PROMO_URL, 'carnet');
+}
+$('#btn-carnet-share').addEventListener('click', async () => {
+  audioInit(); SFX.click();
+  drawCarnet();
+  const text = buildCarnetText();
+  let file = null;
+  try {
+    const blob = await new Promise(res => carnetCv.toBlob(res, 'image/png'));
+    if (blob) file = new File([blob], 'carnet-cabulero.png', { type:'image/png' });
+  } catch(e){ /* canvas bloqueado: seguimos con texto */ }
+  if (file && navigator.canShare && navigator.canShare({ files:[file] })){
+    try {
+      await navigator.share({ files:[file], text });
+      grantShareBonus();
+      return;
+    } catch(e){
+      if (e && e.name === 'AbortError') return;
+    }
+  }
+  window.open('https://wa.me/?text=' + encodeURIComponent(text), '_blank', 'noopener');
+  grantShareBonus();
+});
+$('#btn-carnet-save').addEventListener('click', () => {
+  audioInit(); SFX.click();
+  drawCarnet();
+  let url = '';
+  try { url = carnetCv.toDataURL('image/png'); } catch(e){ return; }
+  const canDownload = ('download' in document.createElement('a'))
+    && !/iP(hone|ad|od)/.test(navigator.userAgent);
+  if (canDownload){
+    const a = document.createElement('a');
+    a.href = url; a.download = 'carnet-cabulero.png';
+    document.body.appendChild(a); a.click(); a.remove();
+    const btn = $('#btn-carnet-save');
+    const prev = btn.textContent;
+    btn.textContent = 'Guardado ✓';
+    setTimeout(() => { btn.textContent = prev; }, 2000);
+  } else {
+    $('#carnet-img').src = url;
+    $('#carnet-saver').classList.add('on');
   }
 });
-
+$('#btn-saver-close').addEventListener('click', () => {
+  $('#carnet-saver').classList.remove('on');
+});
 /* ================= CHAT "ATENCIÓN AL SOCIO" ================= */
 let socioClaimed = false;
 const chatPanel = $('#chat-panel');
