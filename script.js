@@ -28,7 +28,7 @@ const CARDS = [
   { id:'defensor',  name:'El Muro',   cost:75,  cd:9,  hp:520, unlock:1 },
   { id:'enganche',  name:'El 10',     cost:175, cd:8,  hp:120, unlock:2,
     shoot:{ rate:1.5, dmg:22, shots:2 } },
-  { id:'aonitek',   name:'Módulo IA', cost:150, cd:14, hp:150, unlock:1,
+  { id:'aonitek',   name:'Módulo IA', cost:75, cd:14, hp:150, unlock:1,
     module:{ rateBoost:1.45, income:8, every:5 } },
 ];
 const cardById = id => CARDS.find(c => c.id === id);
@@ -49,20 +49,33 @@ const LEVELS = [
     tip:'Arranca el grupo. El rival manda hinchas sueltos: plantá Hinchadas atrás para juntar Aliento y un Delantero por carril. El Muro aguanta cuando se complica.',
     brand:'Dato del DT: mientras vos jugás, un agente de Aonitek podría estar contestando a tus clientes. Solo decimos.',
     unlocks:'Cábalas listas: dibujá la ✕ para anular la mufa.',
+    winTitle:'¡PASASTE DE FASE!',
+    winSub:'La cábala viene funcionando. No toques nada y pasá a cuartos.',
   },
   {
-    n:2, label:'Semifinal', title:'SEMIFINAL', duration:140,
-    pool:[ ['hincha',0.65], ['bengala',0.35] ],
-    tip:'Semifinal. Ojo con las bengalas: corren el doble y no perdonan. El Muro las frena, El 10 las define con doble pelotazo.',
-    brand:'Probá el Módulo IA: automatiza un carril entero. Igual que Aonitek con tu negocio, pero en versión cancha.',
+    n:2, label:'Cuartos de Final', title:'CUARTOS DE FINAL', duration:125,
+    pool:[ ['hincha',0.75], ['bengala',0.25] ],
+    tip:'Cuartos de Final. Empiezan a aparecer las bengalas: corren el doble y no perdonan un descuido. Ya podés meter a El 10 (doble disparo) y el Módulo IA, que ahora sale baratísimo — aprovechalo para automatizar un carril.',
+    brand:'Probá el Módulo IA: ahora cuesta menos y rinde más. Automatizá un carril entero, igual que Aonitek con tu negocio, pero en versión cancha.',
     unlocks:'Se desbloquea: EL 10 (doble disparo).',
+    winTitle:'¡PASASTE DE FASE!',
+    winSub:'Cuartos en el bolsillo. Ahora se pone serio: vamos a semis.',
   },
   {
-    n:3, label:'La Final', title:'LA FINAL', duration:170,
-    pool:[ ['hincha',0.5], ['bengala',0.3], ['capo',0.2] ],
-    tip:'La Final. Vienen los capos de la barra y, sobre el final, el Crack rival. Guardate las cábalas para los últimos minutos y no toques nada.',
+    n:3, label:'Semifinal', title:'SEMIFINAL', duration:140,
+    pool:[ ['hincha',0.55], ['bengala',0.3], ['capo',0.15] ],
+    tip:'Semifinal. Aparece El Capo: mucha vida y avanza despacio, pero no se detiene. El Muro lo frena, El 10 lo termina con doble pelotazo. Las bengalas siguen corriendo el doble — no las subestimes.',
+    brand:'A esta altura del torneo ya no hay tiempo para hacer todo a mano. Tampoco lo hay en tu negocio: para eso están los agentes de Aonitek.',
+    unlocks:'Aparece: EL CAPO (tanque).',
+    winTitle:'¡A LA FINAL!',
+    winSub:'Una más y la copa es tuya. Ni se te ocurra cambiar de medias.',
+  },
+  {
+    n:4, label:'La Final', title:'LA FINAL', duration:185,
+    pool:[ ['hincha',0.42], ['bengala',0.3], ['capo',0.28] ],
+    tip:'La Final, más brava que nunca. Vienen más capos de la barra y, a mitad de partido, el Crack rival entra a la cancha acompañado: esta vez no llega solo. Guardate las cábalas para ese momento y no toques nada.',
     brand:'Aonitek no hace cábalas. Hace agentes. Pero hoy, por las dudas, frotá el amuleto.',
-    unlocks:'Aparecen: EL CAPO (tanque) y EL CRACK RIVAL (jefe).',
+    unlocks:'Aparece: EL CRACK RIVAL (jefe) — y esta vez no llega solo.',
   },
 ];
 
@@ -78,6 +91,7 @@ const DT_RANDOM_TIPS = [
   'No regales el medio: una Hinchada atrás vale más que dos delanteros sin Aliento.',
   'El Muro adelante, los que patean atrás. Básico, pero el 90% lo hace al revés.',
   'El Módulo IA rinde más en el carril donde más sufrís. Automatizá el problema, no el lujo.',
+  'El Módulo IA ya no es un lujo: cuesta poco y se paga solo. Metelo apenas puedas.',
   'Si viene avalancha, no entres en pánico: dibujá la ✕ y respirá.',
   'Las bengalas se frenan con paciencia y un Muro bien plantado.',
 ];
@@ -204,9 +218,10 @@ function buildSchedule(level){
   };
   wave(dur*0.45, 4+level.n, '¡SE VIENE LA OLEADA!');
   wave(dur*0.78, 5+level.n, '¡OTRA OLEADA!');
-  if (level.n === 3){
-    ev.push({ t: dur*0.62 - 0.1, banner:'¡ENTRÓ EL CRACK RIVAL!', sfx:'bad' });
-    ev.push({ t: dur*0.62, spawn:'crack', lane: rndi(1,COLS-2) });
+  if (level.n === LEVELS.length){
+    ev.push({ t: dur*0.58 - 0.1, banner:'¡ENTRÓ EL CRACK RIVAL!', sfx:'bad' });
+    ev.push({ t: dur*0.58, spawn:'crack', lane: rndi(1,COLS-2) });
+    ev.push({ t: dur*0.58 + rnd(1.6), spawn:'capo', lane: rndi(0,COLS-1) });
   }
   // avalancha final
   ev.push({ t: dur-12.1, banner:'¡AVALANCHA FINAL!', sfx:'bad' });
@@ -586,12 +601,12 @@ function drawRails(dt){
   ctx.fillStyle = '#0A1322';
   ctx.fillRect(0,0,railW,H);
   ctx.fillRect(W-railW,0,railW,H);
-  ctx.strokeStyle = 'rgba(138,108,255,.35)';
+  ctx.strokeStyle = 'rgba(9,182,209,.35)';
   ctx.lineWidth = 1;
   ctx.strokeRect(0.5,0.5,railW-1,H-1);
   ctx.strokeRect(W-railW+0.5,0.5,railW-1,H-1);
 
-  ctx.fillStyle = '#8A6CFF';
+  ctx.fillStyle = '#09B6D1';
   ctx.font = '800 '+ Math.round(railW*0.42) +'px Archivo, sans-serif';
   ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
   const tw = ctx.measureText(msg).width;
@@ -641,20 +656,20 @@ function drawUnit(u, x, y){
   const kick = u.kick ? Math.sin(u.kick/0.16*Math.PI)*s*0.06 : 0;
   const def = cardById(u.id);
   const isAon = u.id === 'aonitek';
-  drawChipBase(x, y - kick, s, isAon ? '#1A1340' : '#103258', '#F2F5FA');
+  drawChipBase(x, y - kick, s, isAon ? '#0C2630' : '#103258', '#F2F5FA');
 
   ctx.save();
   ctx.translate(x, y - kick);
   if (isAon){
     // chip Aonitek: A con pulso de circuito
     const pulse = 0.5 + 0.5*Math.sin(S.now*3 + x);
-    ctx.strokeStyle = 'rgba(138,108,255,'+(0.35+0.4*pulse).toFixed(2)+')';
+    ctx.strokeStyle = 'rgba(9,182,209,'+(0.35+0.4*pulse).toFixed(2)+')';
     ctx.lineWidth = 1.4;
     ctx.beginPath();
     ctx.moveTo(-s*0.3, s*0.26); ctx.lineTo(-s*0.3, 0); ctx.lineTo(-s*0.14, 0);
     ctx.moveTo(s*0.3, -s*0.26); ctx.lineTo(s*0.3, 0); ctx.lineTo(s*0.14, 0);
     ctx.stroke();
-    ctx.fillStyle = '#8A6CFF';
+    ctx.fillStyle = '#09B6D1';
     ctx.beginPath(); ctx.arc(-s*0.3, s*0.26, 2.2, 0, 7); ctx.fill();
     ctx.beginPath(); ctx.arc(s*0.3, -s*0.26, 2.2, 0, 7); ctx.fill();
     ctx.fillStyle = '#FFFFFF';
@@ -902,10 +917,10 @@ function drawCardMini(mini, id){
   mc.clearRect(0,0,92,92);
   setCtx(mc);   // las primitivas (roundRect, drawChipBase, drawRoleIcon) usan `ctx`
   try {
-    drawChipBase(46, 48, s, id === 'aonitek' ? '#1A1340' : '#103258', '#F2F5FA');
+    drawChipBase(46, 48, s, id === 'aonitek' ? '#0C2630' : '#103258', '#F2F5FA');
     ctx.save(); ctx.translate(46,48);
     if (id === 'aonitek'){
-      ctx.fillStyle = '#8A6CFF';
+      ctx.fillStyle = '#09B6D1';
       ctx.beginPath(); ctx.arc(-s*0.3, s*0.26, 2.4, 0, 7); ctx.fill();
       ctx.beginPath(); ctx.arc(s*0.3, -s*0.26, 2.4, 0, 7); ctx.fill();
       ctx.fillStyle = '#FFFFFF';
@@ -1169,12 +1184,10 @@ function showResult(won){
   const lv = LEVELS[S.levelIdx];
   $('#res-eyebrow').textContent = 'Mundial 2026 · ' + lv.label;
   if (won){
-    $('#res-title').textContent = lv.n === 1 ? '¡PASASTE DE FASE!' : '¡A LA FINAL!';
+    $('#res-title').textContent = lv.winTitle;
     $('#res-title').style.color = 'var(--gold)';
     $('#res-score').textContent = 'Aguantaste los 90 con ' + (MAX_GOLES - S.goles) + ' de aguante de sobra';
-    $('#res-sub').textContent = lv.n === 1
-      ? 'La cábala viene funcionando. No toques nada y pasá a la semi.'
-      : 'Una más y la copa es tuya. Ni se te ocurra cambiar de medias.';
+    $('#res-sub').textContent = lv.winSub;
   } else {
     $('#res-title').textContent = 'TE EMPATARON EN EL 93\u2032';
     $('#res-title').style.color = 'var(--danger)';
@@ -1373,15 +1386,20 @@ function outcomeInfo(){
     ctaUrl: utmUrl(AONITEK_SERVICES, 'campeon'),
     ctaText:'Quiero mi diagnóstico de IA gratis',
   };
-  if (st.levelReached >= 3) return {
+  if (st.levelReached >= 4) return {
     key:'finalista', label:'FINALISTA', color:'#FFC845',
     ctaUrl: utmUrl(AONITEK_SERVICES, 'finalista'),
     ctaText:'Quiero mi diagnóstico de IA gratis',
   };
-  if (st.levelReached === 2) return {
+  if (st.levelReached === 3) return {
     key:'semifinal', label:'SEMIFINALISTA', color:'#EAF4FB',
     ctaUrl: utmUrl(AONITEK_SERVICES, 'semifinal'),
     ctaText:'Tus rivales ya usan IA. Conocé Aonitek',
+  };
+  if (st.levelReached === 2) return {
+    key:'cuartos', label:'CUARTOFINALISTA', color:'#EAF4FB',
+    ctaUrl: utmUrl(AONITEK_SERVICES, 'cuartos'),
+    ctaText:'Mejorá tu juego con un agente de IA',
   };
   return {
     key:'grupos', label:'FASE DE GRUPOS', color:'#EAF4FB',
@@ -1574,7 +1592,7 @@ function drawCarnet(){
     const pillH = 76;
     const pillX = (W2 - pillW)/2;
     const pillY = msgY + 24;
-    ctx.fillStyle = '#8A6CFF';
+    ctx.fillStyle = '#09B6D1';
     roundRect(pillX, pillY, pillW, pillH, pillH/2); ctx.fill();
     ctx.fillStyle = '#FFFFFF';
     ctx.textBaseline = 'middle';
