@@ -1670,6 +1670,21 @@ function showResult(won){
     acts.appendChild(a);
   }
   mk('Salir al menú', 'btn-ghost', quitToMenu);
+  // Muro de la Fama: solo mostrar si perdió (fin de carrera)
+  const muroBlock = $('#muro-result');
+  if (won){
+    muroBlock.style.display = 'none';
+  } else {
+    muroBlock.style.display = '';
+    // Resetear estado del bloque por si ya se publicó antes
+    const prevOk = muroBlock.querySelector('.muro-ok');
+    if (!prevOk){
+      $('#muro-name-result').value = '';
+      $('#muro-err-result').style.display = 'none';
+      $('#btn-muro-result').disabled = false;
+      $('#btn-muro-result').textContent = 'Publicar';
+    }
+  }
   setScreen('result');
 }
 
@@ -2218,16 +2233,19 @@ async function submitMuro(inputId, btnId, errId){
     err.textContent = 'Ingresá un nombre de al menos 2 caracteres.';
     err.style.display = 'block'; return;
   }
-  const pts = S.totalPts || 0;
+  const totals = statsTotals();
+  const pts = totals ? totals.pts : 0;
   if(!pts || pts <= 0 || pts > 99999){
     err.textContent = 'No hay puntaje válido para publicar.';
     err.style.display = 'block'; return;
   }
 
   // Determinar nivel alcanzado
-  const lvIdx  = (S.levelReached || 1) - 1;
   const lvKeys = ['grupos','cuartos','semifinal','finalista','campeon'];
-  const nivel  = S.outcome ? S.outcome.key : (lvKeys[lvIdx] || 'grupos');
+  const st = S.stats || {};
+  const nivel = (st.champion)
+    ? 'campeon'
+    : (lvKeys[(st.levelReached || 1) - 1] || 'grupos');
 
   btn.disabled = true;
   btn.textContent = '…';
