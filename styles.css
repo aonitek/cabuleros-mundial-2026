@@ -8,8 +8,10 @@
   --gold-deep:#E0A21E;
   --celeste:#7CC4EF;
   --rival:#B23A4E;
-  --aonitek:#8A6CFF;
-  --aonitek-deep:#6C4FE0;
+  --aonitek:#09B6D1;
+  --aonitek-deep:#007a8f;
+  --aonitek-mid:#3b82f6;
+  --aonitek-light:#60a5fa;
   --ink:#F4F7FB;
   --ink-dim:#9FB0C6;
   --danger:#FF5D5D;
@@ -94,7 +96,7 @@ button{font-family:inherit;border:none;cursor:pointer;color:inherit;background:n
   -webkit-text-stroke:1px rgba(0,0,0,.25);
 }
 #banner.bad .b-main{color:var(--danger);text-shadow:0 3px 0 rgba(0,0,0,.55),0 0 30px rgba(255,93,93,.5)}
-#banner.tech .b-main{color:var(--aonitek);text-shadow:0 3px 0 rgba(0,0,0,.55),0 0 30px rgba(138,108,255,.55)}
+#banner.tech .b-main{color:var(--aonitek);text-shadow:0 3px 0 rgba(0,0,0,.55),0 0 30px rgba(9,182,209,.55)}
 @keyframes bannerPop{
   0%{opacity:0;transform:scale(.6)}
   12%{opacity:1;transform:scale(1.06)}
@@ -140,8 +142,8 @@ button{font-family:inherit;border:none;cursor:pointer;color:inherit;background:n
   box-shadow:0 0 0 1.5px var(--gold), 0 0 18px rgba(255,200,69,.35);
   transform:translateY(-4px);
 }
-.card.aon{background:linear-gradient(180deg,#241B4D 0%,#16103A 100%)}
-.card.aon.sel{border-color:var(--aonitek);box-shadow:0 0 0 1.5px var(--aonitek),0 0 18px rgba(138,108,255,.4)}
+.card.aon{background:linear-gradient(180deg,#0F2E38 0%,#081C22 100%)}
+.card.aon.sel{border-color:var(--aonitek);box-shadow:0 0 0 1.5px var(--aonitek),0 0 18px rgba(9,182,209,.4)}
 .card.poor .c-cost{color:var(--danger)}
 .card .c-cd{
   position:absolute;left:0;right:0;bottom:0;height:0%;
@@ -201,13 +203,13 @@ button{font-family:inherit;border:none;cursor:pointer;color:inherit;background:n
 .btn:active{transform:scale(.96)}
 .btn-gold{background:linear-gradient(180deg,var(--gold) 0%,var(--gold-deep) 100%);color:#231903;box-shadow:0 6px 20px rgba(255,200,69,.35)}
 .btn-ghost{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.16);color:var(--ink)}
-.btn-aon{background:linear-gradient(180deg,var(--aonitek) 0%,var(--aonitek-deep) 100%);color:#fff;box-shadow:0 6px 20px rgba(138,108,255,.35)}
+.btn-aon{background:linear-gradient(180deg,var(--aonitek) 0%,var(--aonitek-mid) 55%,var(--aonitek-deep) 100%);color:#fff;box-shadow:0 6px 20px rgba(9,182,209,.35)}
 .btn-wsp{background:#1FAF54;color:#fff;box-shadow:0 6px 20px rgba(31,175,84,.3)}
 .stack{display:flex;flex-direction:column;gap:11px;margin-top:26px;align-items:center}
 .menu-led{
   position:absolute;bottom:0;left:0;right:0;
   padding:10px 0 max(10px, env(safe-area-inset-bottom));
-  background:rgba(138,108,255,.08);border-top:1px solid rgba(138,108,255,.25);
+  background:rgba(9,182,209,.08);border-top:1px solid rgba(9,182,209,.25);
   overflow:hidden;white-space:nowrap;
 }
 .menu-led span{
@@ -262,10 +264,10 @@ button{font-family:inherit;border:none;cursor:pointer;color:inherit;background:n
 .dt-head{display:flex;align-items:center;gap:11px;margin-bottom:12px}
 .dt-avatar{
   width:42px;height:42px;border-radius:12px;flex:none;
-  background:linear-gradient(140deg,var(--aonitek),var(--aonitek-deep));
+  background:linear-gradient(140deg,var(--aonitek),var(--aonitek-mid) 55%,var(--aonitek-deep));
   display:flex;align-items:center;justify-content:center;
   font-weight:900;font-size:19px;color:#fff;
-  box-shadow:0 4px 14px rgba(138,108,255,.4);
+  box-shadow:0 4px 14px rgba(9,182,209,.4);
 }
 .dt-name{font-weight:900;font-size:14px}
 .dt-role{font-size:10px;color:var(--ink-dim);letter-spacing:1.5px;text-transform:uppercase;font-weight:700}
@@ -300,8 +302,8 @@ button{font-family:inherit;border:none;cursor:pointer;color:inherit;background:n
 .res-score{font-size:15px;font-weight:800;color:var(--ink-dim);margin-top:10px;letter-spacing:1px}
 .cta-box{
   width:min(320px,86vw);margin-top:22px;border-radius:16px;padding:17px 16px;
-  background:linear-gradient(140deg,rgba(138,108,255,.16),rgba(138,108,255,.05));
-  border:1px solid rgba(138,108,255,.4);
+  background:linear-gradient(140deg,rgba(9,182,209,.16),rgba(9,182,209,.05));
+  border:1px solid rgba(9,182,209,.4);
 }
 .cta-box p{font-size:13.5px;line-height:1.5;color:var(--ink)}
 .cta-box .btn{margin-top:13px;min-width:0;width:100%;font-size:14px;padding:13px 16px}
@@ -310,8 +312,8 @@ button{font-family:inherit;border:none;cursor:pointer;color:inherit;background:n
 #chat-fab{
   position:absolute;right:14px;bottom:calc(20px + env(safe-area-inset-bottom));z-index:25;
   width:54px;height:54px;border-radius:18px;
-  background:linear-gradient(140deg,var(--aonitek),var(--aonitek-deep));
-  box-shadow:0 8px 24px rgba(138,108,255,.5);
+  background:linear-gradient(140deg,var(--aonitek),var(--aonitek-mid) 55%,var(--aonitek-deep));
+  box-shadow:0 8px 24px rgba(9,182,209,.5);
   display:none;align-items:center;justify-content:center;
   animation:fabFloat 3.2s ease-in-out infinite;
 }
@@ -322,13 +324,13 @@ button{font-family:inherit;border:none;cursor:pointer;color:inherit;background:n
   position:absolute;right:12px;bottom:calc(84px + env(safe-area-inset-bottom));z-index:26;
   width:min(310px,86vw);max-height:62%;
   border-radius:18px;overflow:hidden;display:none;flex-direction:column;
-  background:#0E1B30;border:1px solid rgba(138,108,255,.4);
+  background:#0E1B30;border:1px solid rgba(9,182,209,.4);
   box-shadow:0 18px 50px rgba(0,0,0,.6);
 }
 #chat-panel.on{display:flex}
 .chp-head{
   padding:12px 14px;display:flex;align-items:center;gap:10px;
-  background:linear-gradient(140deg,var(--aonitek),var(--aonitek-deep));
+  background:linear-gradient(140deg,var(--aonitek),var(--aonitek-mid) 55%,var(--aonitek-deep));
 }
 .chp-head .dt-avatar{width:34px;height:34px;font-size:15px;background:rgba(255,255,255,.18);box-shadow:none}
 .chp-title{font-size:13px;font-weight:900;color:#fff}
@@ -341,7 +343,7 @@ button{font-family:inherit;border:none;cursor:pointer;color:inherit;background:n
 #chat-replies{padding:10px 12px 12px;display:flex;flex-wrap:wrap;gap:7px;border-top:1px solid rgba(255,255,255,.08)}
 .qr{
   font-size:12px;font-weight:700;padding:8px 12px;border-radius:999px;
-  background:rgba(138,108,255,.14);border:1px solid rgba(138,108,255,.45);color:#CDC2FF;
+  background:rgba(9,182,209,.14);border:1px solid rgba(9,182,209,.45);color:#60a5fa;
 }
 .qr:active{transform:scale(.95)}
 
