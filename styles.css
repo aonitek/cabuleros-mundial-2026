@@ -361,3 +361,29 @@ button{font-family:inherit;border:none;cursor:pointer;color:inherit;background:n
 @media (prefers-reduced-motion:reduce){
   *{animation-duration:.01ms !important;animation-iteration-count:1 !important;transition-duration:.01ms !important}
 }
+/* ===== Carnet de Cabulero ===== */
+#carnet-apodo{
+  width:min(300px,82vw);margin-top:14px;
+  background:rgba(255,255,255,.06);border:1.5px solid rgba(255,255,255,.18);
+  border-radius:var(--radius);padding:12px 14px;color:var(--ink);
+  font-family:inherit;font-size:15px;font-weight:600;text-align:center;outline:none;
+  -webkit-user-select:text;user-select:text;
+}
+#carnet-apodo:focus{border-color:var(--gold)}
+#carnet-apodo::placeholder{color:rgba(159,176,198,.55)}
+#carnet-cv{
+  width:min(64vw,300px,38vh);height:auto;margin-top:14px;
+  border-radius:14px;
+  box-shadow:0 12px 40px rgba(0,0,0,.5), 0 0 0 1px rgba(255,200,69,.25);
+}
+#carnet-saver{
+  position:fixed;inset:0;z-index:9999;display:none;
+  flex-direction:column;align-items:center;justify-content:center;gap:16px;
+  background:rgba(5,11,20,.96);padding:24px;text-align:center;
+}
+#carnet-saver.on{display:flex}
+#carnet-saver p{font-weight:800;font-size:16px;color:var(--ink)}
+#carnet-saver img{
+  max-width:min(78vw,320px);max-height:62vh;border-radius:12px;
+  box-shadow:0 12px 40px rgba(0,0,0,.6);
+}
