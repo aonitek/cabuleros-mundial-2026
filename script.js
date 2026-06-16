@@ -8,6 +8,7 @@
 const AONITEK_URL = 'https://aonitek.com';           // CTA diagnóstico (editable)
 const GAME_URL = "https://app.aonitek.com/p/zaZu5x"; // URL real de la página publicada
 const PROMO_URL = "https://app.aonitek.com/p/UD87r5j5"; // página de promo del juego (para shares del carnet/campeón)
+const MURO_URL = "https://script.google.com/macros/s/AKfycbx1GAboEWdzDmJ5ByEX5lJgMzcRD9PUtynZ73yJGtOvp_Im06h14aGV0ucdJIm_5bSBJg/exec";
 const AONITEK_SERVICES = 'https://aonitek.com/servicios/';
 const utmUrl = (base, content) => base + '?utm_source=cabuleros&utm_medium=game&utm_campaign=mundial2026&utm_content=' + content;
 
@@ -1214,6 +1215,21 @@ function showResult(won){
     acts.appendChild(a);
   }
   mk('Salir al menú', 'btn-ghost', quitToMenu);
+  // Muro de la Fama: solo mostrar si perdió (fin de carrera)
+  const muroBlock = $('#muro-result');
+  if (won){
+    muroBlock.style.display = 'none';
+  } else {
+    muroBlock.style.display = '';
+    // Resetear estado del bloque por si ya se publicó antes
+    const prevOk = muroBlock.querySelector('.muro-ok');
+    if (!prevOk){
+      $('#muro-name-result').value = '';
+      $('#muro-err-result').style.display = 'none';
+      $('#btn-muro-result').disabled = false;
+      $('#btn-muro-result').textContent = 'Publicar';
+    }
+  }
   setScreen('result');
 }
 
@@ -1748,3 +1764,58 @@ function frame(now){
 }
 requestAnimationFrame(frame);
 resize();
+
+/* ===== MURO DE LA FAMA ===== */
+async function submitMuro(inputId, btnId, errId){
+  const input = $('#'+inputId);
+  const btn   = $('#'+btnId);
+  const err   = $('#'+errId);
+
+  const nombre = input.value.trim();
+  err.style.display = 'none';
+  if(!nombre || nombre.length < 2){
+    err.textContent = 'Ingresá un nombre de al menos 2 caracteres.';
+    err.style.display = 'block'; return;
+  }
+
+  // carnetData() es la misma fuente que usa el carnet — si el carnet muestra pts, acá también hay pts
+  const d = carnetData();
+  const pts = Math.round(d.pts || 0);
+  const nivel = d.outcome ? d.outcome.key : 'grupos';
+
+  // Validación mínima: solo bloqueamos si no hay ningún juego en curso
+  if(!Number.isFinite(pts)){
+    err.textContent = 'Jugá una partida primero.';
+    err.style.display = 'block'; return;
+  }
+
+  btn.disabled = true;
+  btn.textContent = '…';
+
+  // Apps Script no soporta CORS en POST cross-origin → no-cors fire-and-forget
+  fetch(MURO_URL, {
+    method: 'POST',
+    mode: 'no-cors',
+    headers: {'Content-Type':'text/plain'},
+    body: JSON.stringify({
+      Nombre:   nombre.substring(0,20),
+      Puntaje:  pts,
+      Nivel:    nivel,
+      Fecha:    new Date().toISOString().slice(0,10),
+      Validado: 'OK'
+    })
+  }).catch(()=>{});
+
+  // Mostrar éxito inmediatamente (con no-cors no podemos leer el status)
+  const block = btn.closest('.muro-block');
+  block.innerHTML = `<div class="muro-ok">🏆 ¡${escName(nombre)}, tu puntaje está en el Muro!<br><a class="muro-link" href="https://app.aonitek.com/p/RU9vFf" target="_blank">Ver el ranking → <span>Muro de la Fama</span></a></div>`;
+}
+
+function escName(s){ return String(s).replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+$('#btn-muro-result').addEventListener('click', () => submitMuro('muro-name-result','btn-muro-result','muro-err-result'));
+$('#btn-muro-champ').addEventListener('click',  () => submitMuro('muro-name-champ', 'btn-muro-champ', 'muro-err-champ'));
+
+// Enter en los inputs también submite
+$('#muro-name-result').addEventListener('keydown', e => { if(e.key==='Enter') $('#btn-muro-result').click(); });
+$('#muro-name-champ').addEventListener('keydown',  e => { if(e.key==='Enter') $('#btn-muro-champ').click(); });
