@@ -8,7 +8,8 @@
 const AONITEK_URL = 'https://aonitek.com';           // CTA diagnóstico (editable)
 const GAME_URL = "https://app.aonitek.com/p/zaZu5x"; // URL real de la página publicada
 const PROMO_URL = "https://app.aonitek.com/p/UD87r5j5"; // página de promo del juego (para shares del carnet/campeón)
-const MURO_URL = "https://script.google.com/macros/s/AKfycbx1GAboEWdzDmJ5ByEX5lJgMzcRD9PUtynZ73yJGtOvp_Im06h14aGV0ucdJIm_5bSBJg/exec";
+const MURO_URL   = "https://script.google.com/macros/s/AKfycbx1GAboEWdzDmJ5ByEX5lJgMzcRD9PUtynZ73yJGtOvp_Im06h14aGV0ucdJIm_5bSBJg/exec";
+const MURO_TOKEN = "cab26-muro-7k2x";
 const AONITEK_SERVICES = 'https://aonitek.com/servicios/';
 const utmUrl = (base, content) => base + '?utm_source=cabuleros&utm_medium=game&utm_campaign=mundial2026&utm_content=' + content;
 
@@ -1798,6 +1799,7 @@ async function submitMuro(inputId, btnId, errId){
     mode: 'no-cors',
     headers: {'Content-Type':'text/plain'},
     body: JSON.stringify({
+      token:    MURO_TOKEN,
       Nombre:   nombre.substring(0,20),
       Puntaje:  pts,
       Nivel:    nivel,
